@@ -1,0 +1,93 @@
+#!/bin/bash
+
+source main.cfg
+
+runCommand=$1
+runCondition=$2
+DATE=$(date)
+
+# Condition Tests
+if [[ ("$runCommand" == "test") ]];
+    then
+        clear
+        echo "allowedNetwork is set to $allowedNetwork"
+        echo "transmissionUsername is set to $transmissionUsername"
+        echo "transmissionPassword is set to $transmissionPassword"
+        echo "configDirectory is set to $configDirectory"
+fi
+
+# Generate the list of available OpenVPN client profiles.
+if [[ ("$runCommand" == "scan") ]];
+    then
+        clear
+        if [[ -f profiles.list ]]
+            then
+                    rm profiles.list
+            else    
+                    touch profiles.list
+        fi
+        echo "Scanning for available VPN profiles..."
+        startDir=$(pwd)
+        cd $configDirectory
+        fileList=( *.conf )
+        # fileList=$(ls /etc/openvpn/client)
+        echo "The following connections are available:"
+        echo "========================================"
+        for filename in "${fileList[@]}"; do
+            echo "$filename"
+            echo ${filename%%.*} >> $startDir/profiles.list
+        done
+        exit 0
+fi
+
+# Scan for any running Transmission or previously detected OpenVPN profiles.
+if [[ ("$runCommand" == "status") ]];
+    then
+        clear
+        echo "Scanning for available VPN profiles..."
+        cd $configDirectory
+        fileList=( *.conf )
+        # fileList=$(ls /etc/openvpn/client)
+        echo "The following connections are available:"
+        echo "========================================"
+        for filename in "${fileList[@]}"; do
+            echo "$filename"
+        done
+        exit 0
+fi
+
+# If start command is issued
+if [[ ("$runCommand" == "start") ]];
+    then
+        if [[ ("$runCondition" == "mexico") ]];
+            then
+                sudo systemctl start openvpn-client@mexico
+                echo "VPN started using $runCondition"
+                sleep 10
+                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
+        fi
+
+        if [[ ("$runCondition" == "canada2") ]];
+            then
+                sudo systemctl start openvpn-client@canada2
+                echo "VPN started using $runCondition"
+                sleep 10
+                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
+        fi
+
+        if [[ ("$runCondition" == "toronto-tcp") ]];
+            then
+                sudo systemctl start openvpn-client@toronto-tcp
+                echo "VPN started using $runCondition"
+                sleep 10
+                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
+        fi
+
+        if [[ ("$runCondition" == "ohcanada-udp") ]];
+            then
+                sudo systemctl start openvpn-client@ohcanada-udp
+                echo "VPN started using $runCondition"
+                sleep 10
+                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
+        fi
+fi
