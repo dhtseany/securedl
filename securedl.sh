@@ -34,8 +34,8 @@ if [[ ("$runCommand" == "scan") ]];
         echo "The following connections are available:"
         echo "========================================"
         for filename in "${fileList[@]}"; do
-            echo "$filename"
             echo ${filename%%.*} >> $startDir/profiles.list
+            echo "List generation complete."
         done
         exit 0
 fi
