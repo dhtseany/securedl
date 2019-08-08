@@ -2,7 +2,7 @@
 
 This is a work in progress control system for a secured experience using OpenVPN with the transmission client.
 
-SecureDL: A secured means of automating a more private torrent downloading experience. 
+**SecureDL:** A secured means of automating a more private torrent downloading experience. 
 
 This software relies on transmission's web gui. 
 
@@ -30,7 +30,7 @@ $ git clone https://github.com/dhtseany/securedl.git
 
 2. Run install from command line:
 ```
-$ sudo  ./securedl install
+$ sudo ./securedl install
 ```
 
 3. Edit config file to update relevant values:
