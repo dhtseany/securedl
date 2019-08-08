@@ -21,21 +21,21 @@ This software relies on transmission's web gui.
 ./securedl.sh <runCommand> <runCondition>
 ```
 
-## Setup Instructions:
+## Quick Setup Instructions:
 
-1. First create the config directory in /etc:
+1. Clone the project locally
 ```
-# mkdir -p /etc/securedl
-```
-
-2. Copy main.cfg to /etc/securedl/main.cfg
-```
-# cp main.cfg /etc/securedl
+$ git clone https://github.com/dhtseany/securedl.git
 ```
 
-3. Edit main.cfg and update the unique values:
+2. Run install from command line:
 ```
-# nano /etc/securedl/main.cfg
+$ sudo  ./securedl install
+```
+
+3. Edit config file to update relevant values:
+```
+$ sudo nano /etc/securedl/main.cfg
 ```
 
 Edit the value for *allowedNetwork* to correctly reflect your main local network. For example, if your PC has an IP address of 192.168.1.25, your *allowedNetwork* value would be: 
@@ -45,19 +45,25 @@ Edit the value for *allowedNetwork* to correctly reflect your main local network
 ```
 Make sure you add the * at end for the last octet, and make sure you leave the quotation marks "xxx"
 
-4. Mark the primary file as executable:
+
+4. Now it's time to scan for your VPN profiles. The default location for most OpenVPN setups with systemd is /etc/openvpn/client and SecureDL will look for .conf files.
 ```
-# chmod +x securedl
+$ sudo securedl scan
 ```
 
-5. Copy the primary file to /usr/bin:
+5. Check what profiles have been detected with:
 ```
-# cp securedl /usr/bin
+$ sudo securedl status
 ```
+The list should show the .conf file OpenVPN profiles you setup earlier. This command may also be used to query if OpenVPN or Transmission are presently running.
 
-6. Now it's time to scan for your VPN profiles. The default location for most OpenVPN setups with systemd is /etc/openvpn/client and SecureDL will look for .conf files.
-```
-# securedl scan
-```
+6. Start and stop your detected profiles as follows:
 
-7. The previous step should have created /etc/securedl/
+## To start:
+```
+$ sudo securedl start <profilename>
+```
+## To stop:
+```
+$ sudo securedl stop <profilename>
+```

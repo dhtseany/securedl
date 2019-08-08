@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Only change this value if you know what you're doing!
-source /etc/securedl/main.cfg
+# Check if main config file exists
+if [[ -f /etc/securedl/main.cfg ]]
+        then
+                source /etc/securedl/main.cfg
+        else    
+                echo "main.cfg was not detected. I suggest you install first."
+fi
 
 runCommand=$1
 runCondition=$2
@@ -16,17 +21,71 @@ if [[ ("$runCommand" == "test") ]];
         echo "transmissionUsername is set to $transmissionUsername"
         echo "transmissionPassword is set to $transmissionPassword"
         echo "vpnConfigDirectory is set to $vpnConfigDirectory"
+        echo "sdlConfigDirectory is set to $sdlConfigDirectory"
 fi
+
+# Removal Script
+if [[ ("$runCommand" == "remove") ]];
+    then
+        clear
+        if [[ -f /etc/securedl/main.cfg ]]
+            then
+                rm /etc/securedl/main.cfg
+                echo "/etc/securedl/main.cfg was deleted."
+            else
+                echo "/etc/securedl/main.cfg does not exist or could not be deleted."
+        fi
+
+        if [[ -f /etc/securedl/profiles.list ]]
+            then
+                rm /etc/securedl/profiles.list
+                echo "/etc/securedl/profiles.list was deleted."
+            else
+                echo "/etc/securedl/profiles.list does not exist or could not be deleted."
+        fi
+        
+        if [[ -d /etc/securedl ]]
+            then
+                rm -rf /etc/securedl
+                echo "/etc/securedl was deleted."
+            else
+                echo "The main config directory does not exist or could not be deleted."
+        fi
+        
+        if [[ -f /usr/bin/securedl ]]
+            then
+                rm /usr/bin/securedl
+                echo "/usr/bin/securedl was deleted."
+            else
+                echo "/usr/bin/securedl does not exist or could not be deleted."
+        fi
+fi
+
+
+# Quick Installation Script
+if [[ ("$runCommand" == "install") ]];
+    then
+        clear
+        echo "Creating securedl config directory."
+        mkdir -p /etc/securedl
+        echo "Copying main.cfg to /etc/securedl/main.cfg"
+        cp main.cfg /etc/securedl/main.cfg
+        echo "Copying securedl to /usr/bin/securedl"
+        cp securedl /usr/bin/securedl
+        echo "Setting /usr/bin/securedl as executable"
+        chmod +x /usr/bin/securedl
+fi
+
 
 # Generate the list of available OpenVPN client profiles.
 if [[ ("$runCommand" == "scan") ]];
     then
         clear
-        if [[ -f profiles.list ]]
+        if [[ -f $sdlConfigDirectory/profiles.list ]]
             then
-                    rm profiles.list
+                    rm $sdlConfigDirectory/profiles.list
             else    
-                    touch profiles.list
+                    touch $sdlConfigDirectory/profiles.list
         fi
         echo "Scanning for available VPN profiles..."
         cd $vpnConfigDirectory
@@ -35,9 +94,10 @@ if [[ ("$runCommand" == "scan") ]];
         echo "The following connections are available:"
         echo "========================================"
         for filename in "${fileList[@]}"; do
-            echo ${filename%%.*} >> $startDir/profiles.list
-            echo "List generation complete."
+            echo "[Found config file]: $filename"
+            echo ${filename%%.*} >> $sdlConfigDirectory/profiles.list
         done
+        echo "List generation complete."
         exit 0
 fi
 
@@ -45,50 +105,45 @@ fi
 if [[ ("$runCommand" == "status") ]];
     then
         clear
-        echo "Scanning for available VPN profiles..."
-        cd $configDirectory
-        fileList=( *.conf )
-        # fileList=$(ls /etc/openvpn/client)
+        echo "Showing detected VPN profiles..."
+        cd $sdlConfigDirectory
+        readarray fileList < profiles.list
         echo "The following connections are available:"
         echo "========================================"
         for filename in "${fileList[@]}"; do
-            echo "$filename"
+            echo "[Found config file]: $filename"
         done
         exit 0
 fi
 
+startSecureDL(){
+    sudo systemctl start openvpn-client@$1
+    echo "VPN started using $runCondition"
+    sleep 10
+    echo "Launching Transmission Background Service."
+    transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
+}
+
+stopSecureDL(){
+    echo "Terminating the Transmission Background Service."
+    sudo killall transmission-da
+    sleep 5
+    sudo systemctl stop openvpn-client@$1
+    echo "$1 VPN connection has been stopped."
+}
+
 # If start command is issued
 if [[ ("$runCommand" == "start") ]];
     then
-        if [[ ("$runCondition" == "mexico") ]];
-            then
-                sudo systemctl start openvpn-client@mexico
-                echo "VPN started using $runCondition"
-                sleep 10
-                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
-        fi
+        clear
+        startSecureDL $runCondition
+        exit 0
+fi
 
-        if [[ ("$runCondition" == "canada2") ]];
-            then
-                sudo systemctl start openvpn-client@canada2
-                echo "VPN started using $runCondition"
-                sleep 10
-                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
-        fi
-
-        if [[ ("$runCondition" == "toronto-tcp") ]];
-            then
-                sudo systemctl start openvpn-client@toronto-tcp
-                echo "VPN started using $runCondition"
-                sleep 10
-                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
-        fi
-
-        if [[ ("$runCondition" == "ohcanada-udp") ]];
-            then
-                sudo systemctl start openvpn-client@ohcanada-udp
-                echo "VPN started using $runCondition"
-                sleep 10
-                transmission-daemon --auth --username $transmissionUsername --password $transmissionPassword --port 9091 --allowed $allowedNetwork
-        fi
+# If stop command is issued
+if [[ ("$runCommand" == "stop") ]];
+    then
+        clear
+        stopSecureDL $runCondition
+        exit 0
 fi
