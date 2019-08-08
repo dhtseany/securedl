@@ -67,7 +67,7 @@ To remove SecureDL, you have 2 ways to remove it:
 $ sudo securedl remove
 ```
 
-2. You can download the latest github repo, cd to the synced directy use the new executable to remove the existing installation:
+2. You can download the latest github repo, cd to the synced directory and use the newly downloaded executable to remove the existing installation:
 ```
 $ sudo ./securedl remove
 ```
