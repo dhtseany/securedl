@@ -2,7 +2,7 @@
 
 This is a work in progress control system for a secured experience using OpenVPN with the transmission client.
 
-**SecureDL:** A secured means of automating a more private torrent downloading experience. 
+**SecureDL:** *A secured means of automating a more private torrent downloading experience.*
 
 This software relies on transmission's web gui. 
 
