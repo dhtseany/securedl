@@ -1,10 +1,12 @@
 #!/bin/bash
 
-source main.cfg
+# Only change this value if you know what you're doing!
+source /etc/securedl/main.cfg
 
 runCommand=$1
 runCondition=$2
 DATE=$(date)
+startDir=$(pwd)
 
 # Condition Tests
 if [[ ("$runCommand" == "test") ]];
@@ -13,7 +15,7 @@ if [[ ("$runCommand" == "test") ]];
         echo "allowedNetwork is set to $allowedNetwork"
         echo "transmissionUsername is set to $transmissionUsername"
         echo "transmissionPassword is set to $transmissionPassword"
-        echo "configDirectory is set to $configDirectory"
+        echo "vpnConfigDirectory is set to $vpnConfigDirectory"
 fi
 
 # Generate the list of available OpenVPN client profiles.
@@ -27,8 +29,7 @@ if [[ ("$runCommand" == "scan") ]];
                     touch profiles.list
         fi
         echo "Scanning for available VPN profiles..."
-        startDir=$(pwd)
-        cd $configDirectory
+        cd $vpnConfigDirectory
         fileList=( *.conf )
         # fileList=$(ls /etc/openvpn/client)
         echo "The following connections are available:"
