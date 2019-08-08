@@ -18,7 +18,7 @@ This software relies on transmission's web gui.
 
 ## Usage:
 ```
-./securedl.sh <runCommand> <runCondition>
+$ sudo securedl <runCommand> <runCondition>
 ```
 
 ## Quick Setup Instructions:
