@@ -59,6 +59,21 @@ The list should show the .conf file OpenVPN profiles you setup earlier. This com
 
 6. Start and stop your detected profiles as follows:
 
+## Quick Removal Instructions:
+To remove SecureDL, you have 2 ways to remove it:
+
+1. You can use the installed executable to self-remove using:
+```
+$ sudo securedl remove
+```
+
+2. You can download the latest github repo, cd to the synced directy use the new executable to remove the existing installation:
+```
+$ sudo ./securedl remove
+```
+
+**If you ever have problems with SecureDL simply remove it, install it, scan for profiles and try again!**
+
 ## To start:
 ```
 $ sudo securedl start <profilename>
