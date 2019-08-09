@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# That's right, I dev to master.
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
+
 # Check if main config file exists
 if [[ -f /etc/securedl/main.cfg ]]
         then
@@ -10,18 +17,53 @@ fi
 
 runCommand=$1
 runCondition=$2
+optCondition=$3
 DATE=$(date)
-startDir=$(pwd)
+# startDir=$(pwd)
+
+function variable_test() {
+    echo "[Config Variables]"
+    echo "allowedNetwork is set to $allowedNetwork"
+    echo "transmissionUsername is set to $transmissionUsername"
+    echo "transmissionPassword is set to $transmissionPassword"
+    echo "vpnConfigDirectory is set to $vpnConfigDirectory"
+    echo "sdlConfigDirectory is set to $sdlConfigDirectory"
+    echo "========================================"
+    echo "[Import Variables]"
+    echo "[Array Variable Count] "${#importFileData[@]}
+    echo "[ 0] variable was set: "${importFileData[0]}
+    echo "[ 1] variable was set: "${importFileData[1]}
+    echo "[ 2] variable was set: "${importFileData[2]}
+    echo "[ 3] variable was set: "${importFileData[3]}
+    echo "[ 4] variable was set: "${importFileData[4]}
+    echo "[ 5] variable was set: "${importFileData[5]}
+    echo "[ 6] variable was set: "${importFileData[6]}
+    echo "[ 7] variable was set: "${importFileData[7]}
+    echo "[ 8] variable was set: "${importFileData[8]}
+    echo "[ 9] variable was set: "${importFileData[9]}
+    echo "[10] variable was set: "${importFileData[10]}
+    echo "[11] variable was set: "${importFileData[11]}
+    echo "[12] variable was set: "${importFileData[12]}
+    echo "[13] variable was set: "${importFileData[13]}
+    echo "[14] variable was set: "${importFileData[14]}
+    echo "========================================"
+    echo "[importFilename] variable was set: "$importFilename
+    echo "[importPassName] variable was set: "$importPassName
+    echo "[importConfName] variable was set: "$importConfName
+
+    if [[ ("$1" == "long") ]];
+        then
+            for i in "${!importFileData[@]}"; do 
+                printf "%s\t%s\n" "$i" "${importFileData[$i]}"
+            done
+    fi
+
+}
 
 # Condition Tests
 if [[ ("$runCommand" == "test") ]];
     then
-        clear
-        echo "allowedNetwork is set to $allowedNetwork"
-        echo "transmissionUsername is set to $transmissionUsername"
-        echo "transmissionPassword is set to $transmissionPassword"
-        echo "vpnConfigDirectory is set to $vpnConfigDirectory"
-        echo "sdlConfigDirectory is set to $sdlConfigDirectory"
+    variable_test
 fi
 
 # Removal Script
@@ -61,7 +103,6 @@ if [[ ("$runCommand" == "remove") ]];
         fi
 fi
 
-
 # Quick Installation Script
 if [[ ("$runCommand" == "install") ]];
     then
@@ -75,7 +116,6 @@ if [[ ("$runCommand" == "install") ]];
         echo "Setting /usr/bin/securedl as executable"
         chmod +x /usr/bin/securedl
 fi
-
 
 # Generate the list of available OpenVPN client profiles.
 if [[ ("$runCommand" == "scan") ]];
@@ -101,6 +141,91 @@ if [[ ("$runCommand" == "scan") ]];
         exit 0
 fi
 
+# Import a new OpenVPN profile automatically.
+if [[ ("$runCommand" == "import") ]];
+    then
+        if [[ -z $runCondition ]];
+        	then
+                echo "A valid input OVPN file is required to proceed."
+            else
+                clear
+                echo "User has chosen to import the following VPN profile:"
+                echo $runCondition
+                read -e -p "Shall we continue importing this file? [N/y] : " importProceed
+                if [[ ("$importProceed" == "y" || "$importProceed" == "Y") ]]; 
+                    then
+                        echo "Do a thing."
+                        readarray importFileData < $runCondition
+                        echo "Data from $runCondition has been retrieved."
+                        echo "In order to automate this process you have to save your VPN credentials."
+                        read -e -p "Enter your VPN Username : " importVPNUsername
+                        read -e -p "Enter your VPN Password : " importVPNPassword
+                        # copy[$i]="auth-user-pass $vpnConfigDirectory/${runCondition%%.*}.conf"
+                        # ================
+                        if [[ ( "$optCondition" == "test") ]];
+                            then
+                            variable_test
+                        fi
+                        # ================
+                        # passPath=$vpnConfigDirectory/${runCondition%%.*}
+                        importFilename=$(basename $runCondition)
+                        importPassName="${importFilename%%.*}.pass"
+                        importConfName="${importFilename%%.*}.conf"
+                        # echo $filename
+                        for data in "${!importFileData[@]}"; do
+                            # printf "%s\t%s\n" "$data" "${importFileData[$data]}"
+                            if [[ ${importFileData[$data]} == *"auth-user-pass"* ]]; then
+                                echo "Condition Matched."
+                                importFileData[$data]="auth-user-pass $importPassName"
+                                echo "auth-user-pass path updated."
+                            fi
+                        done
+                        # ================
+                        if [[ ( "$optCondition" == "test") ]];
+                            then
+                                echo "========================================"
+                                echo "-----"
+                                echo "Before:"
+                                printf "%s\t%s\n" "$data" "${importFileData[$data]}"
+                                echo "-----"
+                                echo ""
+                                # importFileData[$data]="auth-user-pass $vpnConfigDirectory/${runCondition%%.*}"
+                                echo "//"
+                                echo $(basename $data)
+                                echo "//"
+                                echo ""
+                                # echo ${data/auth-user-pass/auth-user-pass2}
+                                echo "After:"
+                                printf "%s\t%s\n" "$data" "${importFileData[$data]}"
+                                echo "-----"
+                                variable_test
+                                exit 0
+                        fi
+                        # ================
+                        for data in "${importFileData[@]}"; do
+                            echo $data >> $vpnConfigDirectory/$importConfName
+                        done
+                        echo $importVPNUsername >> $vpnConfigDirectory/$importPassName
+                        echo $importVPNPassword >> $vpnConfigDirectory/$importPassName
+                        chmod 600 $vpnConfigDirectory/$importPassName
+                        echo "Import Complete"
+                        exit 0
+                    else
+                        clear
+                        echo "User to chosen cancel the import process."
+                        exit 1
+                fi
+                cd $sdlConfigDirectory
+                readarray fileList < profiles.list
+                echo "The following connections are available:"
+                echo "========================================"
+                for filename in "${fileList[@]}"; do
+                    echo "[Known config file]: $filename"
+                done
+                exit 0
+        fi
+fi
+
 # Scan for any running Transmission or previously detected OpenVPN profiles.
 if [[ ("$runCommand" == "status") ]];
     then
@@ -108,15 +233,39 @@ if [[ ("$runCommand" == "status") ]];
         echo "Showing detected VPN profiles..."
         cd $sdlConfigDirectory
         readarray fileList < profiles.list
-        echo "The following connections are available:"
+        echo -e "\033[1;31mThe following connections are available:\e[0m"
         echo "========================================"
         for filename in "${fileList[@]}"; do
-            echo "[Found config file]: $filename"
+            echo -e "[\033[1;34mFound config file\e[0m]: $filename"
         done
-        exit 0
+        # Test to check if OpenVPN service is running.
+        echo -e "\033[1;31mThe following connections are active:\e[0m"
+        echo "========================================"
+        for filename in "${fileList[@]}"; do
+            STATUS=`systemctl is-active openvpn-client@$filename`
+            if [[ ${STATUS} == 'active' ]]; then
+                echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $filename
+            else 
+                echo "[" "Inactive" "]" $filename
+            fi
+        done
+        echo ""
+        echo -e "\033[1;31mTransmission Status:\e[0m"
+        echo "========================================"
+        SERVICE="transmission-da"
+        if pgrep -x "$SERVICE" >/dev/null
+            then
+                echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $SERVICE
+            else
+                echo "[" "Inactive" "]" $SERVICE
+                # uncomment to start nginx if stopped
+                # systemctl start nginx
+                # mail
+        fi
+                exit 0
 fi
 
-startSecureDL(){
+startSecureDL() {
     sudo systemctl start openvpn-client@$1
     echo "VPN started using $runCondition"
     sleep 10
@@ -135,7 +284,6 @@ stopSecureDL(){
 # If start command is issued
 if [[ ("$runCommand" == "start") ]];
     then
-        clear
         startSecureDL $runCondition
         exit 0
 fi
@@ -143,7 +291,6 @@ fi
 # If stop command is issued
 if [[ ("$runCommand" == "stop") ]];
     then
-        clear
         stopSecureDL $runCondition
         exit 0
 fi
