@@ -246,7 +246,7 @@ if [[ ("$runCommand" == "status") ]];
             if [[ ${STATUS} == 'active' ]]; then
                 echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $filename
             else 
-                echo "[" "Inactive" "]" $filename
+                echo -e "[" "\033[1;32mInactive\e[0m" "]" $filename
             fi
         done
         echo ""
@@ -257,7 +257,7 @@ if [[ ("$runCommand" == "status") ]];
             then
                 echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $SERVICE
             else
-                echo "[" "Inactive" "]" $SERVICE
+                echo -e "[" "\033[1;32mInactive\e[0m" "]" $SERVICE
                 # uncomment to start nginx if stopped
                 # systemctl start nginx
                 # mail
