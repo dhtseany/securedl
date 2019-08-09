@@ -252,17 +252,28 @@ if [[ ("$runCommand" == "status") ]];
         echo ""
         echo -e "\033[1;31mTransmission Status:\e[0m"
         echo "========================================"
-        SERVICE="transmission-da"
-        if pgrep -x "$SERVICE" >/dev/null
+        transmissionService="transmission-da"
+        if pgrep -x "$transmissionService" >/dev/null
             then
-                echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $SERVICE
+                echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $transmissionService
             else
-                echo -e "[" "\033[1;32mInactive\e[0m" "]" $SERVICE
+                echo -e "[" "\033[1;32mInactive\e[0m" "]" $transmissionService
                 # uncomment to start nginx if stopped
                 # systemctl start nginx
                 # mail
         fi
-                exit 0
+        
+        openVPNService="openvpn"
+        if pgrep -x "$transmissionService" >/dev/null
+            then
+                echo -e "[" "\033[1;31m\e[5m\e[1mActive  \e[21m\e[0m" "]" $openVPNService
+            else
+                echo -e "[" "\033[1;32mInactive\e[0m" "]" $openVPNService
+                # uncomment to start nginx if stopped
+                # systemctl start nginx
+                # mail
+        fi
+        exit 0
 fi
 
 startSecureDL() {
