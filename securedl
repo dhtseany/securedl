@@ -171,6 +171,8 @@ if [[ ("$runCommand" == "import") ]];
                         importFilename=$(basename $runCondition)
                         importPassName="${importFilename%%.*}.pass"
                         importConfName="${importFilename%%.*}.conf"
+                        touch $vpnConfigDirectory/$importConfName
+                        touch $vpnConfigDirectory/$importPassName
                         # echo $filename
                         for data in "${!importFileData[@]}"; do
                             # printf "%s\t%s\n" "$data" "${importFileData[$data]}"
