@@ -28,6 +28,18 @@ if [[ -f /usr/bin/openvpn ]]
                 exit 1
 fi
 
+# Check if transmission-cli is installed
+if [[ -f /usr/bin/transmission-cli ]]
+        then
+            if [[ ("$runCommand" == "test") ]];
+                then
+                    echo "[Info] transmission detected"
+            fi
+        else    
+                echo "[Fatal] transmission-cli was not detected."
+                echo "Aborting."
+                exit 1
+fi
 
 runCommand=$1
 runCondition=$2
