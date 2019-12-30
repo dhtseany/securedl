@@ -15,6 +15,20 @@ if [[ -f /etc/securedl/main.cfg ]]
                 echo "main.cfg was not detected. I suggest you install first."
 fi
 
+# Check if openvpn is installed
+if [[ -f /usr/bin/openvpn ]]
+        then
+            if [[ ("$runCommand" == "test") ]];
+                then
+                    echo "[Info] openvpn detected"
+            fi
+        else    
+                echo "[Fatal] OpenVPN was not detected."
+                echo "Aborting."
+                exit 1
+fi
+
+
 runCommand=$1
 runCondition=$2
 optCondition=$3
