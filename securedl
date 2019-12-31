@@ -318,6 +318,12 @@ stopSecureDL(){
     sleep 5
     sudo systemctl stop openvpn-client@$1
     echo "$1 VPN connection has been stopped."
+    if [[ ("$minidlna_fix" == "yes")]];
+        then
+            echo "Resetting MiniDLNA Database..."
+            sudo minidlnad -R
+            sudo systemctl restart minidlna
+    fi
 }
 
 # If start command is issued
